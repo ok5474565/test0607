@@ -67,7 +67,7 @@ def main():
     month = f"{date_input.month:02d}"  # 月份补零
     day = f"{date_input.day:02d}"      # 日期补零
     # 组合年/月/日，确保年和月日之间有一个斜杠
-    date_str = f"{year}/{month}/{day}"
+    date_str = f"{year}/{month}{day}"
     
     # 根据用户输入的日期生成完整的URL
     url = url_base + date_str + "/news.shtml"  # 确保news前面没有多余的斜杠
