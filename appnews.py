@@ -22,20 +22,15 @@ def sanitize_title(title):
         title = title.replace(char, '')
     return title
 
-# 从网页下载标题和内容到txt文档
-def download(title, url, folder_path):
-    soup = requestOver(url)
-    tag = soup.find('div', class_="left_zw")
-    if not tag:
-        return 0
+# 从网页下载标题和内容到txt文档，并提供下载链接
+def download(title, content, folder_path):
     title = sanitize_title(title)
-    content = " ".join(tag.stripped_strings)  # 改进内容提取
-    filename = os.path.join(folder_path, title + '.txt')  # 使用folder_path
-    with open(filename, 'w', encoding='utf-8', errors='ignore') as file_object:
-        file_object.write(title + '\n')
-        file_object.write(content)
-    # 在Streamlit中显示爬取的新闻标题
-    st.write(f'正在爬取新闻: {title}')
+    filename = title + '.txt'
+    # 将内容写入文件。这里我们不保存到本地，而是直接返回文件对象。
+    file = open(os.path.join(folder_path, filename), 'wb')
+    file.write(content.encode('utf-8'))
+    file.seek(0)  # 移动文件指针到文件开头，以便下载
+    return file
 
 # 爬虫具体执行过程
 def crawlAll(url, max_news, folder_path):
@@ -68,9 +63,22 @@ def main():
     
     # 执行爬虫
     y = crawlAll(url, max_news, folder_path)
-    # 在Streamlit中显示爬取的新闻数量
+    # 显示爬取的新闻数量
     st.write(f"共爬取了{y-1}篇新闻。")
     st.write("已爬取完成")  # 在Streamlit中显示完成消息
+    
+    # 为每个新闻生成下载按钮
+    for title in os.listdir(folder_path):
+        if title.endswith('.txt'):
+            file_path = os.path.join(folder_path, title)
+            with open(file_path, 'rb') as file:
+                # 使用st.download_button创建下载按钮
+                st.download_button(
+                    label=f"下载 {title}",
+                    data=file,
+                    file_name=title,
+                    mime="text/plain"
+                )
 
 if __name__ == '__main__':
     main()  # 直接调用main函数
