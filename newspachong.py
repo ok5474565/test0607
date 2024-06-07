@@ -1,4 +1,3 @@
-import os
 import requests
 from bs4 import BeautifulSoup
 import streamlit as st
@@ -8,7 +7,7 @@ from datetime import datetime
 # 用request和BeautifulSoup处理网页
 def requestOver(url):
     try:
-        response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
+        response = requests.get(url)
         response.raise_for_status()  # 确保请求成功
         response.encoding = 'utf-8'
         return response.text
@@ -36,22 +35,22 @@ def crawlAll(url, max_news):
     news_list = []  # 存储新闻信息的列表
     news_count = 0  # 新闻计数器
 
-    for s in soup.findAll("div", class_="content_list"):
-        for tag in s.findAll("li"):
-            sp = tag.findAll("a")
-            if len(sp) >= 2 and "财经" in sp[1].text:  # 检查链接和文本
-                title = sp[1].text.strip()
-                href = sp[1].get('href')
-                if not href.startswith('http'):  # 确保是完整的URL
-                    urlAll = url + href
-                else:
-                    urlAll = href
-                article_soup = BeautifulSoup(requestOver(urlAll), 'html.parser')
-                tag_article = article_soup.find('div', class_="left_zw")
-                if tag_article and news_count < max_news:
-                    content = " ".join(tag_article.stripped_strings)
-                    news_list.append((title, content, urlAll))  # 将新闻信息存储到列表
-                    news_count += 1
+    # 假设新闻列表在某个具体的class下，这里需要根据实际页面结构调整
+    for news in soup.find_all("div", class_="news-item"):  # 根据实际class名称修改
+        title = news.find("h2").text.strip() if news.find("h2") else "无标题"
+        href = news.find("a")['href'] if news.find("a") else ""
+        if href.startswith('http'):
+            urlAll = href
+        else:
+            urlAll = url + href
+        article_soup = BeautifulSoup(requestOver(urlAll), 'html.parser')
+        # 假设新闻内容在某个具体的class下，这里需要根据实际页面结构调整
+        content = article_soup.find("div", class_="article-content").text.strip() if article_soup.find("div", class_="article-content") else "无内容"
+        news_list.append((title, content, urlAll))
+        news_count += 1
+        if news_count >= max_news:
+            break
+
     return news_list, news_count
 
 # Streamlit 应用程序的主函数
@@ -62,12 +61,17 @@ def main():
     url_base = "http://www.chinanews.com/scroll-news/"
     url_end = "/news.shtml"
     
-    # 允许用户输入日期，格式化日期为"/年月日/"格式
+    # 允许用户输入日期，并格式化为"年/月日"格式
     date_input = st.date_input("请输入想要爬取的日期", datetime.now())
-    date_str = date_input.strftime("/%Y/%m/%d/")
+    year = f"{date_input.year:04d}"
+    month = f"{date_input.month:02d}"
+    day = f"{date_input.day:02d}"
+    date_str = f"/{year}{month}{day}"
+    
+    # 根据用户输入的日期生成完整的URL
     url = url_base + date_str + url_end
     
-    st.write(f"您选择的日期是: {date_str[1:-1]}")  # 显示日期，去掉两侧的"/"
+    st.write(f"您选择的日期是: {date_str[1:]}")  # 显示日期，去掉开头的"/"
     st.write(f"正在爬取的URL: {url}")
     
     # 限制爬取的新闻数量
@@ -78,7 +82,7 @@ def main():
     
     if crawl_button:
         news_list, news_count = crawlAll(url, max_news)
-        if news_list:
+        if news_count > 0:
             for title, content, urlAll in news_list:
                 file, filename = download(content, title)
                 with st.spinner(f'Downloading {title}...'):
