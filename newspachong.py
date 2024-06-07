@@ -5,6 +5,8 @@ import streamlit as st
 from io import BytesIO
 from datetime import datetime
 
+# 参考文献：https://blog.csdn.net/weixin_44485744/article/details/109563474
+
 # 用request和BeautifulSoup处理网页
 def requestOver(url):
     response = requests.get(url)
