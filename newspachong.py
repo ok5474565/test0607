@@ -55,47 +55,41 @@ def crawlAll(url, max_news):
 
 # Streamlit 应用程序的主函数
 def main():
-    st.title("新闻爬虫")
+    st.title("新闻爬虫")  # 设置网页标题
     
-    # 设置URL的基础部分和结束部分
-    url_base = "http://www.chinanews.com/scroll-news/"
-    # 注意这里不需要在年份前添加斜杠
+    max_news = 30  # 限制爬取的新闻数量为30
     
-    # 允许用户输入日期，并格式化为"年/月日"格式
-    date_input = st.date_input("请输入想要爬取的日期", datetime.now())
-    year = date_input.year
-    month = f"{date_input.month:02d}"  # 月份补零
-    day = f"{date_input.day:02d}"      # 日期补零
-    # 组合年/月/日，确保年和月日之间有一个斜杠
+    # 使用date_input让用户选择日期
+    date_selected = st.date_input("请选择要爬取新闻的日期", datetime.datetime.now())
+    
+    # 格式化日期为 "YYYY/MMDD" 格式
+    year = date_selected.year
+    month = f"{date_selected.month:02d}"  # 月份补零
+    day = f"{date_selected.day:02d}"      # 日期补零
     date_str = f"{year}/{month}{day}"
     
-    # 根据用户输入的日期生成完整的URL
-    url = url_base + date_str + "/news.shtml"  # 确保news前面没有多余的斜杠
+    # 动态生成URL
+    url_base = "http://www.chinanews.com/scroll-news/{}/news.shtml"
+    url = url_base.format(date_str)
     
+    # 创建存储新闻的文件夹路径
+    current_datetime = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    folder_path = os.path.join(r'D:\0521', current_datetime)
+    os.makedirs(folder_path, exist_ok=True)
+    
+    # 清空页面输出，以便重新运行时不显示旧内容
+    st.empty()
+    
+    # 显示用户选择的日期和URL
     st.write(f"您选择的日期是: {date_str}")
     st.write(f"正在爬取的URL: {url}")
     
-    # 限制爬取的新闻数量
-    max_news = st.number_input("请输入要爬取的新闻数量", min_value=1, max_value=100, value=30)
+    # 执行爬虫
+    y = crawlAll(url, max_news, folder_path)
     
-    # 按钮触发爬虫程序
-    crawl_button = st.button("开始爬取")
-    
-    if crawl_button:
-        news_list, news_count = crawlAll(url, max_news)
-        if news_count > 0:
-            for title, content, urlAll in news_list:
-                file, filename = download(content, title)
-                with st.spinner(f'Downloading {title}...'):
-                    st.download_button(
-                        label=f"下载: {filename}",
-                        data=file.getvalue(),
-                        file_name=filename,
-                        mime="text/plain"
-                    )
-            st.write(f"共爬取了{news_count}篇新闻。")
-        else:
-            st.write("没有找到符合条件的新闻或请求网页失败。")
+    # 显示爬取的新闻数量和完成消息
+    st.write(f"共爬取了{y-1}篇新闻。")
+    st.write("已爬取完成")
 
 if __name__ == '__main__':
-    main()
+    main()  # 直接调用main函数
