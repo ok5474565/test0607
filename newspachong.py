@@ -7,10 +7,14 @@ from datetime import datetime
 
 # 用request和BeautifulSoup处理网页
 def requestOver(url):
-    response = requests.get(url)
-    response.raise_for_status()  # 确保请求成功
-    response.encoding = 'utf-8'
-    return response.text
+    try:
+        response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
+        response.raise_for_status()  # 确保请求成功
+        response.encoding = 'utf-8'
+        return response.text
+    except requests.exceptions.RequestException as e:
+        st.write(f"请求网页时发生错误: {e}")
+        return None
 
 # 辅助函数，用于清理标题中的非法字符
 def sanitize_title(title):
@@ -23,6 +27,7 @@ def download(content, title):
     filename = sanitize_title(title) + '.txt'
     file = BytesIO()
     file.write(content.encode('utf-8'))
+    file.seek(0)
     return file, filename
 
 # 爬虫具体执行过程
@@ -47,7 +52,6 @@ def crawlAll(url, max_news):
                     content = " ".join(tag_article.stripped_strings)
                     news_list.append((title, content, urlAll))  # 将新闻信息存储到列表
                     news_count += 1
-
     return news_list, news_count
 
 # Streamlit 应用程序的主函数
@@ -58,14 +62,12 @@ def main():
     url_base = "http://www.chinanews.com/scroll-news/"
     url_end = "/news.shtml"
     
-    # 允许用户输入日期
+    # 允许用户输入日期，格式化日期为"/年月日/"格式
     date_input = st.date_input("请输入想要爬取的日期", datetime.now())
-    
-    # 根据用户输入的日期生成完整的URL
-    date_str = date_input.strftime("%Y/%m/%d")
+    date_str = date_input.strftime("/%Y/%m/%d/")
     url = url_base + date_str + url_end
     
-    st.write(f"您选择的日期是: {date_str}")
+    st.write(f"您选择的日期是: {date_str[1:-1]}")  # 显示日期，去掉两侧的"/"
     st.write(f"正在爬取的URL: {url}")
     
     # 限制爬取的新闻数量
@@ -76,7 +78,7 @@ def main():
     
     if crawl_button:
         news_list, news_count = crawlAll(url, max_news)
-        if news_count > 0:
+        if news_list:
             for title, content, urlAll in news_list:
                 file, filename = download(content, title)
                 with st.spinner(f'Downloading {title}...'):
@@ -88,7 +90,7 @@ def main():
                     )
             st.write(f"共爬取了{news_count}篇新闻。")
         else:
-            st.write("没有找到符合条件的新闻。")
+            st.write("没有找到符合条件的新闻或请求网页失败。")
 
 if __name__ == '__main__':
     main()
