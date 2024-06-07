@@ -59,19 +59,20 @@ def main():
     
     # 设置URL的基础部分和结束部分
     url_base = "http://www.chinanews.com/scroll-news/"
-    url_end = "/news.shtml"
+    # 注意这里不需要在年份前添加斜杠
     
     # 允许用户输入日期，并格式化为"年/月日"格式
     date_input = st.date_input("请输入想要爬取的日期", datetime.now())
-    year = f"{date_input.year:04d}"
-    month = f"{date_input.month:02d}"
-    day = f"{date_input.day:02d}"
-    date_str = f"/{year}{month}{day}"
+    year = date_input.year
+    month = f"{date_input.month:02d}"  # 月份补零
+    day = f"{date_input.day:02d}"      # 日期补零
+    # 组合年/月/日，确保年和月日之间有一个斜杠
+    date_str = f"{year}/{month}/{day}"
     
     # 根据用户输入的日期生成完整的URL
-    url = url_base + date_str + url_end
+    url = url_base + date_str + "/news.shtml"  # 确保news前面没有多余的斜杠
     
-    st.write(f"您选择的日期是: {date_str[1:]}")  # 显示日期，去掉开头的"/"
+    st.write(f"您选择的日期是: {date_str}")
     st.write(f"正在爬取的URL: {url}")
     
     # 限制爬取的新闻数量
