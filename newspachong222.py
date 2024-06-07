@@ -63,7 +63,7 @@ def main():
     date = st.date_input("请选择新闻的日期", datetime.now())
     year, month, day = date.year, date.month, date.day
     # 格式化日期为"年月日"的形式，确保两位数的月和日
-    formatted_date = f"{year}/{str(month).zfill(2)}/{str(day).zfill(2)}"
+    formatted_date = f"{year}/{str(month).zfill(2)}{str(day).zfill(2)}"
     # 动态生成URL
     url = f"http://www.chinanews.com/scroll-news/{formatted_date}/news.shtml"
     
