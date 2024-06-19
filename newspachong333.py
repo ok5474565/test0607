@@ -3,7 +3,10 @@ import requests
 from bs4 import BeautifulSoup
 import streamlit as st
 from io import BytesIO
+from zipfile import ZipFile
 from datetime import datetime
+
+# 参考文献：https://blog.csdn.net/weixin_44485744/article/details/109563474
 
 # 用request和BeautifulSoup处理网页
 def requestOver(url):
@@ -27,7 +30,8 @@ def download(content, title):
 # 爬虫具体执行过程
 def crawlAll(url, max_news):
     soup = BeautifulSoup(requestOver(url), 'html.parser')
-    news_list = []
+    global news_list
+    news_list = []  # 存储新闻文件的列表
     count = 0
     
     for s in soup.findAll("div", class_="content_list"):
@@ -45,20 +49,26 @@ def crawlAll(url, max_news):
                 if tag_article:
                     content = " ".join(tag_article.stripped_strings)
                     file, filename = download(content, title)
-                    news_list.append((file, filename, title))
+                    news_list.append((file, filename, title))  # 添加到列表
                     count += 1
                 if count >= max_news:
                     break
     return news_list, count
 
+# 用于生成zip文件的函数
+def get_zipfile(files):
+    in_memory_file = BytesIO()
+    with ZipFile(in_memory_file, 'w') as zf:
+        for file, filename, _ in files:
+            file.seek(0)
+            zf.writestr(filename, file.getvalue())
+    in_memory_file.seek(0)
+    return in_memory_file
+
 # Streamlit 应用程序的主函数
 def main():
     st.title("新闻爬虫")
     
-    # 初始化Session State，用于存储下载文件
-    if 'news_list' not in st.session_state:
-        st.session_state.news_list = []
-
     max_news = st.number_input("请输入要爬取的新闻数量", min_value=1, max_value=100, value=30)
     
     # 允许用户选择日期
@@ -75,13 +85,11 @@ def main():
     crawl_button = st.button("开始爬取")
     
     if crawl_button:
-        # 执行爬虫，并存储结果到Session State
+        # 执行爬虫
         news_list, news_count = crawlAll(url, max_news)
-        for file, filename, title in news_list:
-            st.session_state.news_list.append((file, filename, title))  # 存储到会话状态
         
-        # 显示下载按钮
-        for file, filename, title in st.session_state.news_list:
+        # 显示单独的下载按钮
+        for file, filename, title in news_list:
             file.seek(0)  # 重置文件指针到开头
             with st.spinner(f'Downloading {title}...'):
                 st.download_button(
@@ -89,6 +97,16 @@ def main():
                     data=file,
                     file_name=filename,
                     mime="text/plain"
+                )
+        
+        # 添加下载全部的按钮
+        if news_list:
+            with st.spinner("正在打包文件..."):
+                download_all_button = st.download_button(
+                    label="下载全部文件",
+                    data=get_zipfile(news_list),
+                    file_name="news_files.zip",
+                    mime="application/zip"
                 )
         
         st.write(f"共爬取了{news_count}篇新闻。")
