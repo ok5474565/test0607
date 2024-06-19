@@ -6,6 +6,8 @@ import numpy as np
 from PIL import Image
 import pandas as pd
 
+st.audio("1132983854.mp3", format="audio/mp3")
+
 # 辅助函数，用于清理标题中的非法字符
 def sanitize_word(word, illegal_chars):
     return ''.join([char for char in word if char not in illegal_chars])
