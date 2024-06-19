@@ -6,6 +6,7 @@ from io import BytesIO
 from zipfile import ZipFile
 from datetime import datetime
 
+st.audio("1132983854.mp3", format="audio/mp3")
 # 参考文献：https://blog.csdn.net/weixin_44485744/article/details/109563474
 
 # 用request和BeautifulSoup处理网页
