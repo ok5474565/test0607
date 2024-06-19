@@ -37,7 +37,7 @@ def crawlAll(url, max_news):
     for s in soup.findAll("div", class_="content_list"):
         for tag in s.findAll("li"):
             sp = tag.findAll("a")
-            if "教育" in str(sp):  # 假设我们只对包含'教育'的链接感兴趣
+            if "财经" in str(sp):  # 假设我们只对包含'财经'的链接感兴趣
                 title = sp[1].string.strip()
                 href = sp[1]['href']
                 if not href.startswith(('http:', 'https:')):
