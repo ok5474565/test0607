@@ -22,6 +22,7 @@ def download(content, title):
     filename = sanitize_title(title) + '.txt'
     file = BytesIO()
     file.write(content.encode('utf-8'))
+    file.seek(0)  # 重置文件指针到开头
     return file, filename
 
 # 爬虫具体执行过程
@@ -45,11 +46,11 @@ def crawlAll(url, max_news):
                 if tag_article:
                     content = " ".join(tag_article.stripped_strings)
                     file, filename = download(content, title)
-                    news_list.append((file, filename, title))
+                    news_list.append((file, filename))
                     count += 1
                 if count >= max_news:
                     break
-    return news_list, count
+    return news_list
 
 # Streamlit 应用程序的主函数
 def main():
@@ -76,14 +77,12 @@ def main():
     
     if crawl_button:
         # 执行爬虫，并存储结果到Session State
-        news_list, news_count = crawlAll(url, max_news)
-        for file, filename, title in news_list:
-            st.session_state.news_list.append((file, filename, title))  # 存储到会话状态
+        news_list = crawlAll(url, max_news)
+        st.session_state.news_list.extend(news_list)  # 存储到会话状态
         
         # 显示下载按钮
-        for file, filename, title in st.session_state.news_list:
-            file.seek(0)  # 重置文件指针到开头
-            with st.spinner(f'Downloading {title}...'):
+        for file, filename in st.session_state.news_list:
+            with st.spinner(f'Downloading {filename}...'):
                 st.download_button(
                     label=f"下载: {filename}",
                     data=file,
@@ -91,7 +90,7 @@ def main():
                     mime="text/plain"
                 )
         
-        st.write(f"共爬取了{news_count}篇新闻。")
+        st.write(f"共爬取了{len(st.session_state.news_list)}篇新闻。")
         st.write("已爬取完成")
 
 if __name__ == '__main__':
