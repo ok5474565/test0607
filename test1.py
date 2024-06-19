@@ -2,11 +2,9 @@ import streamlit as st
 
 def main():
     st.title("视频播放示例")
-    # 请确保视频文件路径是正确的
-    video_file_path = "279233.mp4"
-    
-    # 使用 st.video 嵌入视频
-    st.video(video_file_path, width=600, height=400)
+    # 假设您的视频文件位于应用程序的相同目录中
+    video_file = open("path_to_your_video.mp4", "rb")
+    st.video(video_file)
 
 if __name__ == "__main__":
     main()
