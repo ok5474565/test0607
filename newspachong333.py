@@ -68,8 +68,9 @@ def get_zipfile(files):
 
 # Streamlit 应用程序的主函数
 def main():
-    st.audio("1132983854.mp3", format="audio/mp3")
+    
     st.title("新闻爬虫")
+    st.audio("1132983854.mp3", format="audio/mp3")
     
     max_news = st.number_input("请输入要爬取的新闻数量", min_value=1, max_value=100, value=30)
     
