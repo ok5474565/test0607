@@ -21,7 +21,7 @@ def get_top_words(words, top_k):
 
 # 在Streamlit中显示应用程序
 def main():
-    st.title("文本分词与高频词统计")
+    #st.title("文本分词与高频词统计")
     
     # 设置上传文件的按钮
     uploaded_file = st.file_uploader("请上传你的文本文件", type=["txt"])
