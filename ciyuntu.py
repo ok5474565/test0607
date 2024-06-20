@@ -17,7 +17,7 @@ def remove_stopwords(words, stopwords):
     return [word for word in words if word not in stopwords]
 
 # 生成词云图
-def generate_wordcloud(frequencies, font_path, width=800, height=600):
+def generate_wordcloud(frequencies, font_path, width=800, height=600, title="词云图"):
     # 创建词云对象
     wc = WordCloud(
         font_path=font_path,
@@ -29,7 +29,7 @@ def generate_wordcloud(frequencies, font_path, width=800, height=600):
     
     # 显示词云图
     image = wc.to_image()
-    st.image(image, use_column_width=True)  # 根据需要调整图像大小
+    st.image(image, use_column_width=True, caption=title)  # 根据需要调整图像大小
 
 # 主函数
 def main():
