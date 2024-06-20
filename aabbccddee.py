@@ -34,7 +34,7 @@ def generate_wordcloud(frequencies, font_path, width=800, height=600):
     except Exception as e:
         # 打印错误信息，或者将其记录到日志中
         print(f"Error generating wordcloud: {e}")
-        # 可以在这里返回一个占位图像或者None
+        # 返回 None 或者一个占位图像
         return None
 
 # 在Streamlit中显示应用程序
@@ -77,7 +77,10 @@ def main():
         
         # 生成并显示词云图
         wordcloud_image = generate_wordcloud(wordcloud_freq, font_path)
-        st.image(wordcloud_image, use_column_width=True)
+        if wordcloud_image is not None:
+            st.image(wordcloud_image, use_column_width=True)
+        else:
+            st.write("Failed to generate wordcloud image.")
         
         # 创建条形图的数据框
         top_words_df = pd.DataFrame(top_words, columns=['Word', 'Frequency'])
