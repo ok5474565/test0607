@@ -21,16 +21,21 @@ def get_top_words(words, top_k):
 
 # 生成词云图
 def generate_wordcloud(frequencies, font_path, width=800, height=600):
-    wc = WordCloud(
-        font_path=font_path,
-        background_color='white',
-        max_words=200,
-        width=width,
-        height=height
-    ).generate_from_frequencies(frequencies)
-    
-    image = wc.to_image()
-    return image
+    try:
+        wc = WordCloud(
+            font_path=font_path,
+            background_color='white',
+            max_words=200,
+            width=width,
+            height=height
+        ).generate_from_frequencies(frequencies)
+        image = wc.to_image()
+        return image
+    except Exception as e:
+        # 打印错误信息，或者将其记录到日志中
+        print(f"Error generating wordcloud: {e}")
+        # 可以在这里返回一个占位图像或者None
+        return None
 
 # 在Streamlit中显示应用程序
 def main():
