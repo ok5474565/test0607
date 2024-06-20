@@ -21,21 +21,16 @@ def get_top_words(words, top_k):
 
 # 生成词云图
 def generate_wordcloud(frequencies, font_path, width=800, height=600):
-    try:
-        wc = WordCloud(
-            font_path=font_path,
-            background_color='white',
-            max_words=200,
-            width=width,
-            height=height
-        ).generate_from_frequencies(frequencies)
-        image = wc.to_image()
-        return image
-    except Exception as e:
-        # 打印错误信息，或者将其记录到日志中
-        print(f"Error generating wordcloud: {e}")
-        # 返回 None 或者一个占位图像
-        return None
+    wc = WordCloud(
+        font_path=font_path,
+        background_color='white',
+        max_words=200,
+        width=width,
+        height=height
+    ).generate_from_frequencies(frequencies)
+    
+    image = wc.to_image()
+    return image
 
 # 在Streamlit中显示应用程序
 def main():
@@ -69,18 +64,15 @@ def main():
         top_k = 10
         top_words = get_top_words(filtered_words, top_k)
         
-        # 直接使用整个词频字典来创建词云图的频率字典
-        wordcloud_freq = dict(word_freq)
+        # 创建词云图的频率字典
+        wordcloud_freq = {word: freq for word, freq in top_words}
         
         # 设置中文字体路径
         font_path = 'simhei.ttf'  # 请确保这个路径是正确的
         
         # 生成并显示词云图
         wordcloud_image = generate_wordcloud(wordcloud_freq, font_path)
-        if wordcloud_image is not None:
-            st.image(wordcloud_image, use_column_width=True)
-        else:
-            st.write("Failed to generate wordcloud image.")
+        st.image(wordcloud_image, use_column_width=True)
         
         # 创建条形图的数据框
         top_words_df = pd.DataFrame(top_words, columns=['Word', 'Frequency'])
