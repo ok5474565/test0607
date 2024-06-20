@@ -33,7 +33,7 @@ def generate_wordcloud(frequencies, font_path, width=800, height=600):
 
 # 主函数
 def main():
-    st.title("文本分词、高频词统计与词云图生成")
+    #st.title("文本分词、高频词统计与词云图生成")
     
     # 设置上传文件的按钮
     uploaded_file = st.file_uploader("请上传你的文本文件", type=["txt"])
