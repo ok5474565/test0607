@@ -29,7 +29,7 @@ def download(content, title):
     return file, filename
 
 # 爬虫具体执行过程
-def crawlAll(url, max_news):
+def crawlAll(url, max_news, categories):
     soup = BeautifulSoup(requestOver(url), 'html.parser')
     global news_list
     news_list = []  # 存储新闻文件的列表
