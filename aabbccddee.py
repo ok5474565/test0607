@@ -14,24 +14,6 @@ def sanitize_word(word, illegal_chars):
 def remove_stopwords(words, stopwords):
     return [word for word in words if word not in stopwords]
 
-# 定义高频词统计的函数
-def get_top_words(words, top_k):
-    counter = Counter(words)
-    return counter.most_common(top_k)
-
-# 生成词云图
-def generate_wordcloud(frequencies, font_path, width=800, height=600):
-    wc = WordCloud(
-        font_path=font_path,
-        background_color='white',
-        max_words=200,
-        width=width,
-        height=height
-    ).generate_from_frequencies(frequencies)
-    
-    image = wc.to_image()
-    return image
-
 # 在Streamlit中显示应用程序
 def main():
     st.title("文本分词、高频词统计与词云图生成")
@@ -55,37 +37,43 @@ def main():
         
         # 清理非法字符并去除停用词
         sanitized_words = [sanitize_word(word, illegal_chars) for word in words if word]
-        filtered_words = remove_stopwords(sanitized_words, set(stopwords))
+        filtered_words = remove_stopwords(sanitized_words, stopwords)
         
         # 统计词频
         word_freq = Counter(filtered_words)
         
-        # 获取高频词
-        top_k = 10
-        top_words = get_top_words(filtered_words, top_k)
+        # 获取不同数量的高频词
+        top_k_for_bar = 10  # 条形图取前10个高频词
+        top_k_for_wordcloud = 30  # 词云图取前30个高频词
+        
+        # 根据top_k_for_bar获取条形图需要的高频词
+        top_words_for_bar = word_freq.most_common(top_k_for_bar)
+        
+        # 根据top_k_for_wordcloud获取词云图需要的高频词
+        top_words_for_wordcloud = word_freq.most_common(top_k_for_wordcloud)
         
         # 创建词云图的频率字典
-        wordcloud_freq = {word: freq for word, freq in top_words}
+        wordcloud_freq = {word: freq for word, freq in top_words_for_wordcloud}
         
         # 设置中文字体路径
         font_path = 'simhei.ttf'  # 请确保这个路径是正确的
         
         # 生成并显示词云图
-        wordcloud_image = generate_wordcloud(wordcloud_freq, font_path)
-        st.image(wordcloud_image, use_column_width=True)
+        wc = WordCloud(font_path=font_path, background_color='white').generate_from_frequencies(wordcloud_freq)
+        st.image(wc, use_column_width=True)
         
         # 创建条形图的数据框
-        top_words_df = pd.DataFrame(top_words, columns=['Word', 'Frequency'])
+        top_words_df_bar = pd.DataFrame(top_words_for_bar, columns=['Word', 'Frequency'])
         
         # 反转DataFrame，因为我们想要按降序显示高频词
-        top_words_df = top_words_df.sort_values(by='Frequency', ascending=False).reset_index(drop=True)
+        top_words_df_bar = top_words_df_bar.sort_values(by='Frequency', ascending=False).reset_index(drop=True)
         
         # 显示高频词
-        st.write("高频词统计:")
-        st.dataframe(top_words_df)
+        st.write("高频词条形图（前10）:")
+        st.dataframe(top_words_df_bar)
         
         # 生成条形图
-        st.bar_chart(top_words_df.set_index('Word')['Frequency'])
+        st.bar_chart(top_words_df_bar.set_index('Word')['Frequency'])
 
 if __name__ == '__main__':
     main()
