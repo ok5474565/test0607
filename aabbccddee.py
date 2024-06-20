@@ -64,8 +64,8 @@ def main():
         top_k = 10
         top_words = get_top_words(filtered_words, top_k)
         
-        # 创建词云图的频率字典
-        wordcloud_freq = {word: freq for word, freq in top_words}
+        # 直接使用整个词频字典来创建词云图的频率字典
+        wordcloud_freq = dict(word_freq)
         
         # 设置中文字体路径
         font_path = 'simhei.ttf'  # 请确保这个路径是正确的
